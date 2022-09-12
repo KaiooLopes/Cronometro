@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cronômentro</title>
+
+    <style>
+        html{
+            height: 100%;
+        }
+        
+        body{
+            background-image: linear-gradient(to bottom, black 20%, purple 80%);
+            background-repeat: no-repeat;
+            text-align: center;
+            margin: 0;
+        }
+
+        h1{
+            color: white;
+            font-size: 35px;
+            border-right: 2px solid white;
+            border-bottom: 2px solid white;
+            display: inline-block;
+            padding-right: 3px;
+        }
+
+        .container{
+            width: 80%;
+            margin: 0 auto;
+            background-color: gray;
+            border-radius: 10px;
+        }
+
+        .input{
+            width: 80%;
+            border: 2px solid black;
+            margin: 0 auto;
+            background-color: white;
+            border-radius: 10px;
+        }
+        
+        .input a{
+            font-size: 100px;
+        }
+
+        button{
+            padding: 20px;
+            margin: 10px 10px;
+            border-radius: 20px;
+            cursor: pointer;
+            color: rgb(0, 0, 0);
+            font-size: 20px;
+        }
+
+        button:hover{
+            transition: 0.5s ease;
+        }
+        
+        .iniciar{
+            background-color: rgb(0, 199, 0);
+        }
+
+        .iniciar:hover{
+            background-color: rgb(0, 150, 0);
+        }
+
+        .pausar{
+            background-color: yellow;
+        }
+
+        .pausar:hover{
+            background-color: rgb(190, 190, 0);
+        }
+
+        .parar{
+            background-color: red;
+        }
+
+        .parar:hover{
+            background-color: rgb(187, 0, 0);
+        }
+    </style>
+</head>
+<body>
+    <h1>Cronômentro</h1>
+    <div class="container">
+        <div class="input">
+            <a></a>
+        </div>
+        <button class="iniciar">Iniciar</button>
+        <button class="pausar">Pausar</button>
+        <button class="parar">Parar</button>
+    </div>
+
+    <script>
+        const input = document.querySelector(".input a")
+        const btnInicio = document.querySelector(".iniciar")
+        const btnPausar = document.querySelector(".pausar")
+        const btnParar = document.querySelector(".parar")
+
+        btnInicio.addEventListener("click", iniciar)
+        btnPausar.addEventListener("click", pausar)
+        btnParar.addEventListener("click", parar)
+        let rodando = false
+        let msClickIniciar = 0
+        let msClickPausar = 0
+        let msTempoDecorrido = 0
+        let intervalo = null
+        
+        function iniciar(){
+            if(rodando) return;
+            parar()
+            msClickIniciar = Date.now()
+            iniciarCronômetro()
+            rodando = true
+        }
+
+        function pausar(){
+            if(input.innerHTML === `00:00:00`) return;
+            if(rodando){
+                this.innerHTML = "Continuar"
+                clearInterval(intervalo);
+                msClickPausar = Date.now();
+                msTempoDecorrido += (msClickPausar - msClickIniciar);
+            }else{
+                this.innerHTML = "Pausar"
+                msClickIniciar = Date.now()
+                iniciarCronômetro(msTempoDecorrido)
+            }
+            rodando = !rodando
+        }
+        
+        function parar(){
+            btnPausar.innerHTML = `Pausar`
+            msClickPausar = 0;
+            msClickIniciar = 0;
+            rodando = false;
+            clearInterval(intervalo);
+            msTempoDecorrido = 0;
+            input.innerHTML ='00:00:00';
+            m = `00`;
+        }
+
+        if(!input.innerHTML){
+            input.innerHTML = `00:00:00`
+        }
+
+        let m = `00`
+        
+        function formatar(tempo){
+            const MINUTO = 60 * 1000
+            if(tempo < 1000){
+                tempo = tempo.toString()
+                tempo = Array.from(tempo)
+                tempo = tempo.splice(0, 2).join("")
+                if(tempo < 9){
+                    return `${m}:00:0${tempo}`
+                }else{
+                    return `${m}:00:${tempo}`
+                };
+            }else if(tempo < MINUTO){
+                let s = tempo/1000;
+                s = parseInt(s);
+                let ms = tempo - (s * 1000);
+                ms = ms.toString()
+                ms = Array.from(ms)
+                ms = ms.splice(0, 2).join("")
+                if(ms < 9){
+                    ms = `0${ms}`
+                }
+                if(s > 9){
+                    return `${m}:${s}:${ms}`
+                }else{
+                    return `${m}:0${s}:${ms}`
+                }//s + ':' + ms
+            }else{
+                m = tempo / MINUTO;
+                m = parseInt(m); //1
+                if(m < 9){
+                    m = `0${m}`
+                }
+                return formatar(tempo - m * MINUTO);
+            }
+        }
+
+        function iniciarCronômetro(tempoDecorrido){
+            let msDecorrido = tempoDecorrido || 0
+            intervalo = setInterval(() => {
+                let ts = Date.now()
+                let diferença = ts - msClickIniciar
+                input.innerHTML = formatar(diferença + msDecorrido)
+            },25);
+        }
+    </script>
+</body>
+</html>
